@@ -1,4 +1,4 @@
-# Project Starter CLI — Full Specification
+# Turbokit CLI — Full Specification
 
 A complete end‑to‑end specification for a Turborepo‑based project generator CLI using Bun, TypeScript, React, Expo, Hono, Storybook, Husky, and consistent shared configuration.
 
@@ -174,7 +174,7 @@ All template files defined earlier (App.tsx, index.tsx, Vite config, Expo config
 
 ## Command
 ```
-create-project
+turbokit
 ```
 
 ## Flags
@@ -216,8 +216,8 @@ Initial commit added automatically.
 
 ## Project Structure (CLI Implementation)
 ```
-create-project/
-  bin/create-project.ts
+turbokit/
+  bin/turbokit.ts
   src/
     index.ts
     cli/
@@ -279,16 +279,16 @@ bin → src/index.ts → parseArgs → prompts → validate → generate → ins
 ## Publishing
 - Published to npm as a global CLI
 - Supports:
-  - `bunx create-project`
-  - `create-project` if installed globally
+  - `bunx turbokit`
+  - `turbokit` if installed globally
 
 ---
 
 # Appendix — Future Enhancements
 These are **not part of v1** but the spec leaves room for them.
 
-- `create-project add <module>`
-- `create-project upgrade` (template versioning)
+- `turbokit add <module>`
+- `turbokit upgrade` (template versioning)
 - Template packs (custom user templates)
 - Remote template sources
 - Selective task running in hooks (lint-staged)

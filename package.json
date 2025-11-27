@@ -1,0 +1,44 @@
+{
+  "name": "turbokit",
+  "version": "0.1.0",
+  "description": "CLI to generate Turborepo-based monorepo projects",
+  "type": "module",
+  "bin": {
+    "turbokit": "./bin/turbokit.ts"
+  },
+  "main": "./src/index.ts",
+  "files": [
+    "bin",
+    "src",
+    "templates",
+    "dist"
+  ],
+  "scripts": {
+    "dev": "bun run bin/turbokit.ts",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src bin --ext .ts",
+    "test": "bun test"
+  },
+  "keywords": [
+    "cli",
+    "generator",
+    "turborepo",
+    "monorepo",
+    "react",
+    "typescript",
+    "bun"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@inquirer/prompts": "^7.0.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.3.0"
+  }
+}
