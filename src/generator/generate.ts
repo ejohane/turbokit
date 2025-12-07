@@ -226,12 +226,12 @@ export async function generate(options: GenerateOptions): Promise<void> {
     logger.step(currentStep, totalSteps, 'Installing dependencies');
     await runCommand(['bun', 'install'], projectPath, logger);
 
-    // Step 10: Create initial commit
+    // Step 10: Create initial commit (skip hooks for clean initial state)
     currentStep++;
     logger.step(currentStep, totalSteps, 'Creating initial commit');
     await runCommand(['git', 'add', '.'], projectPath, logger);
     await runCommand(
-      ['git', 'commit', '-m', 'Initial commit'],
+      ['git', 'commit', '--no-verify', '-m', 'Initial commit'],
       projectPath,
       logger
     );
