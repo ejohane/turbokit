@@ -1,0 +1,164 @@
+import js from "@eslint/js";
+import tseslint from "typescript-eslint";
+import reactPlugin from "eslint-plugin-react";
+import reactHooksPlugin from "eslint-plugin-react-hooks";
+import globals from "globals";
+
+/**
+ * Shared ESLint flat config for {{projectName}}
+ * Extends this in app-specific eslint.config.mjs files
+ */
+
+/** @type {import('eslint').Linter.Config[]} */
+const baseConfig = [
+  // Ignore patterns
+  {
+    ignores: [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/build/**",
+      "**/.turbo/**",
+      "**/coverage/**",
+      "**/*.generated.*",
+    ],
+  },
+
+  // Base JavaScript recommended rules
+  js.configs.recommended,
+
+  // TypeScript ESLint recommended rules
+  ...tseslint.configs.recommended,
+
+  // Global settings for all files
+  {
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module",
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+        ...globals.es2021,
+      },
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
+    },
+    linterOptions: {
+      reportUnusedDisableDirectives: true,
+    },
+  },
+
+  // TypeScript-specific rules
+  {
+    files: ["**/*.ts", "**/*.tsx", "**/*.mts", "**/*.cts"],
+    rules: {
+      // TypeScript handles these
+      "no-undef": "off",
+
+      // Prefer TypeScript's checker
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
+
+      // Allow explicit any in some cases, warn instead of error
+      "@typescript-eslint/no-explicit-any": "warn",
+
+      // Enforce consistent type imports
+      "@typescript-eslint/consistent-type-imports": [
+        "warn",
+        {
+          prefer: "type-imports",
+          fixStyle: "inline-type-imports",
+        },
+      ],
+
+      // Allow empty functions (useful for no-op callbacks)
+      "@typescript-eslint/no-empty-function": "off",
+
+      // Require explicit return types on exported functions
+      "@typescript-eslint/explicit-module-boundary-types": "off",
+    },
+  },
+];
+
+/** @type {import('eslint').Linter.Config[]} */
+const reactConfig = [
+  // React plugin configuration
+  {
+    files: ["**/*.jsx", "**/*.tsx"],
+    plugins: {
+      react: reactPlugin,
+      "react-hooks": reactHooksPlugin,
+    },
+    settings: {
+      react: {
+        version: "detect",
+      },
+    },
+    rules: {
+      // React recommended rules
+      ...reactPlugin.configs.recommended.rules,
+      ...reactPlugin.configs["jsx-runtime"].rules,
+
+      // React Hooks rules
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn",
+
+      // Not needed with React 17+ JSX transform
+      "react/react-in-jsx-scope": "off",
+      "react/jsx-uses-react": "off",
+
+      // Prop types not needed with TypeScript
+      "react/prop-types": "off",
+
+      // Prefer self-closing tags
+      "react/self-closing-comp": "warn",
+
+      // Consistent boolean props
+      "react/jsx-boolean-value": ["warn", "never"],
+
+      // Fragment shorthand
+      "react/jsx-fragments": ["warn", "syntax"],
+
+      // No array index as key (can cause issues with reordering)
+      "react/no-array-index-key": "warn",
+    },
+  },
+];
+
+/** @type {import('eslint').Linter.Config[]} */
+const nodeConfig = [
+  {
+    files: ["**/*.cjs", "**/*.mjs", "**/server/**/*.ts", "**/api/**/*.ts"],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+  },
+];
+
+/**
+ * Combined config for React + TypeScript projects
+ * Use this for web apps and UI libraries
+ */
+export const reactTsConfig = [...baseConfig, ...reactConfig];
+
+/**
+ * Config for Node.js + TypeScript projects
+ * Use this for API servers and CLI tools
+ */
+export const nodeTsConfig = [...baseConfig, ...nodeConfig];
+
+/**
+ * Full config including all rules
+ * Use this as-is or extend for specific needs
+ */
+export default [...baseConfig, ...reactConfig, ...nodeConfig];

@@ -1,0 +1,47 @@
+# AI Agent Instructions for {{projectName}}
+
+## Overview
+This is a Turborepo monorepo with the following structure...
+
+## Working with the Codebase
+
+### Running Commands
+Always run commands from the root directory using Turborepo:
+```bash
+bun run dev          # All apps
+bun run build        # All packages
+turbo run dev --filter=web  # Single app
+```
+
+### Adding Dependencies
+```bash
+# Root devDependency
+bun add -d <package>
+
+# Workspace dependency
+bun add <package> --filter=web
+bun add <package> --filter={{scope}}/ui
+```
+
+### Package Naming
+Internal packages use scope: {{scope}}
+- {{scope}}/ui - Shared components
+- {{scope}}/config - Shared config
+
+### Code Style
+- TypeScript strict mode
+- ESLint + Prettier
+- 2-space indentation
+- Single quotes
+
+### Testing
+Tests use Vitest. Run with:
+```bash
+bun run test
+bun run test -- --watch  # Watch mode
+```
+
+### Important Paths
+- `apps/` - Application code
+- `packages/` - Shared packages
+- `packages/config/` - ESLint and TypeScript configs

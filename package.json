@@ -10,12 +10,12 @@
   "files": [
     "bin",
     "src",
-    "templates",
-    "dist"
+    "templates"
   ],
   "scripts": {
     "dev": "bun run bin/turbokit.ts",
     "build": "tsc",
+    "prepublishOnly": "bun run build",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src bin --ext .ts",
     "test": "bun test"
@@ -32,7 +32,7 @@
   "author": "",
   "license": "MIT",
   "engines": {
-    "node": ">=18"
+    "bun": ">=1.0"
   },
   "dependencies": {
     "@inquirer/prompts": "^7.0.0"

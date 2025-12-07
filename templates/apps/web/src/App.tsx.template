@@ -1,0 +1,13 @@
+import { Button } from "@{{scope}}/ui";
+
+function App() {
+  return (
+    <div>
+      <h1>{{projectName}}</h1>
+      <p>Welcome to your new web app!</p>
+      <Button>Click me</Button>
+    </div>
+  );
+}
+
+export default App;

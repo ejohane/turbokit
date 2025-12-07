@@ -5,6 +5,9 @@
 import { parseArgs } from './cli/parseArgs';
 import { promptForConfig } from './cli/prompts';
 import { validateConfig, formatValidationErrors } from './generator/validate';
+import { generate } from './generator/generate';
+import { printDryRun } from './cli/dryRun';
+import { printSummary } from './cli/summary';
 import { createLogger } from './utils/logger';
 
 export async function main(argv: string[]): Promise<void> {
@@ -35,18 +38,11 @@ export async function main(argv: string[]): Promise<void> {
 
     // 5. Generate project or show dry-run
     if (flags.dryRun) {
-      logger.info('Dry-run mode: would generate the following structure:');
       printDryRun(config);
     } else {
-      logger.info('Project generation not yet implemented');
-      logger.info('Config validated successfully!');
-      // TODO: Implement generation
-      // await generate(config, flags, logger);
+      await generate({ config, flags, logger });
+      printSummary(config, logger);
     }
-
-    // 6. Print summary
-    // TODO: Implement summary
-    // printSummary(config, logger);
 
   } catch (error) {
     if (error instanceof Error) {
@@ -59,32 +55,4 @@ export async function main(argv: string[]): Promise<void> {
     }
     process.exit(1);
   }
-}
-
-/**
- * Print a dry-run preview of the project structure
- */
-function printDryRun(config: any): void {
-  console.log(`\n${config.projectName}/`);
-  console.log('├── apps/');
-  if (config.modules.web) console.log('│   ├── web/');
-  if (config.modules.mobile) console.log('│   ├── mobile/');
-  if (config.modules.api) console.log('│   ├── api/');
-  if (config.modules.storybook) console.log('│   └── storybook/');
-  console.log('├── packages/');
-  console.log('│   ├── config/');
-  if (config.modules.ui) console.log('│   └── ui/');
-  console.log('├── .github/');
-  console.log('│   └── workflows/');
-  console.log('│       └── ci.yml');
-  console.log('├── .husky/');
-  console.log('│   └── pre-commit');
-  console.log('├── package.json');
-  console.log('├── tsconfig.json');
-  console.log('├── turbo.json');
-  console.log('├── README.md');
-  console.log('├── AGENTS.md');
-  console.log('├── .gitignore');
-  console.log('└── .editorconfig');
-  console.log('');
 }

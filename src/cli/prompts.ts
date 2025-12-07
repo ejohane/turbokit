@@ -109,7 +109,7 @@ export async function promptForConfig(flags: CLIFlags): Promise<ProjectConfig> {
   console.log('\nProject Configuration:');
   console.log(`  Name:      ${config.projectName}`);
   console.log(`  Path:      ${config.projectPath}`);
-  console.log(`  Scope:     ${config.scope}`);
+  console.log(`  Scope:     @${config.scope}`);
   console.log(`\nModules:`);
   if (modules.web) console.log('  ✓ Web app (React + Vite)');
   if (modules.mobile) console.log('  ✓ Mobile app (Expo)');

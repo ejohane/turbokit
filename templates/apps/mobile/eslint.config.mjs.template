@@ -1,0 +1,4 @@
+import { reactTsConfig } from "@{{scope}}/config/eslint";
+
+/** @type {import('eslint').Linter.Config[]} */
+export default [...reactTsConfig];

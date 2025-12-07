@@ -1,0 +1,22 @@
+{
+  "name": "{{projectName}}",
+  "private": true,
+  "packageManager": "bun@1.1.43",
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "test": "turbo test",
+    "typecheck": "turbo typecheck",
+    "ci": "turbo lint typecheck test build",
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "eslint": "{{eslintVersion}}",
+    "husky": "{{huskyVersion}}",
+    "prettier": "{{prettierVersion}}",
+    "turbo": "{{turboVersion}}",
+    "typescript": "{{typescriptVersion}}"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "extends": "{{scope}}/config/tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": "."
+  },
+  "references": [
+    { "path": "packages/config" },
+    { "path": "packages/ui" },
+    { "path": "apps/web" },
+    { "path": "apps/api" }
+  ]
+}

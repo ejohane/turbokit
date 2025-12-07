@@ -32,7 +32,7 @@ export const VERSIONS = {
 
   // Build tools
   vite: '^5.0.0',
-  turbo: '^1.11.0',
+  turbo: '^2.0.0',
 
   // Mobile
   expo: '~50.0.0',

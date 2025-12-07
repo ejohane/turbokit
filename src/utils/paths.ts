@@ -75,9 +75,10 @@ export function getRelativePath(from: string, to: string): string {
 }
 
 /**
- * Convert project name to npm scope
- * @example "my-project" -> "@my-project"
+ * Convert project name to npm scope (without @ prefix)
+ * The @ is added in templates: @{{scope}}/package-name
+ * @example "my-project" -> "my-project"
  */
 export function toScope(projectName: string): string {
-  return `@${projectName}`;
+  return projectName;
 }
