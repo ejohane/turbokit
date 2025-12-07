@@ -15,19 +15,49 @@ bun install -g turbokit
 turbokit
 ```
 
+## Stack
+
+| Category | Technology | Version |
+|----------|------------|---------|
+| **Runtime & Package Manager** | Bun | 1.1.43 |
+| **Monorepo** | Turborepo | ^2.0.0 |
+| **Language** | TypeScript | ^5.5.0 |
+| **Linting** | ESLint (flat config) | ^9.0.0 |
+| **Formatting** | Prettier | ^3.1.0 |
+| **Git Hooks** | Husky | ^8.0.0 |
+| **CI/CD** | GitHub Actions | - |
+
+### Web App
+| Technology | Version |
+|------------|---------|
+| React | ^18.2.0 |
+| Vite | ^5.4.0 |
+| Vitest | ^1.0.0 |
+| Testing Library | ^14.1.0 |
+
+### Mobile App
+| Technology | Version |
+|------------|---------|
+| Expo | ~54.0.0 |
+| React Native | 0.81.5 |
+
+### API Server
+| Technology | Version |
+|------------|---------|
+| Hono | ^4.6.0 |
+
+### Storybook
+| Technology | Version |
+|------------|---------|
+| Storybook | ^8.4.0 |
+
 ## Features
 
-- Turborepo monorepo structure
-- Bun runtime + package manager
-- TypeScript everywhere
-- Optional modules:
-  - Web app (React + Vite)
-  - Mobile app (Expo)
-  - API server (Bun + Hono)
-  - Storybook
-- Shared config and UI packages
-- Pre-configured CI/CD (GitHub Actions)
-- Husky pre-commit hooks
+- Strict TypeScript configuration
+- Shared config package (tsconfig, eslint, prettier)
+- Shared UI component package
+- Pre-configured CI/CD pipeline
+- Pre-commit hooks (lint + typecheck)
 
 ## Usage
 
