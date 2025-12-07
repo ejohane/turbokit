@@ -2,7 +2,7 @@
  * Print summary of generated project
  */
 
-import { basename, dirname } from 'node:path';
+import { dirname } from 'node:path';
 import type { ProjectConfig } from '../types/config';
 import type { Logger } from '../utils/logger';
 

@@ -9,14 +9,22 @@ import { generate } from './generator/generate';
 import { printDryRun } from './cli/dryRun';
 import { printSummary } from './cli/summary';
 import { createLogger } from './utils/logger';
+import {
+  isTurbokitError,
+  OperationCancelledError,
+} from './utils/errors';
 
 export async function main(argv: string[]): Promise<void> {
+  // Track verbose mode for error handling (default false until args parsed)
+  let verbose = false;
+
   try {
     // 1. Parse command line arguments
     const flags = await parseArgs(argv);
+    verbose = flags.verbose;
 
     // 2. Create logger with verbose mode support
-    const logger = createLogger(flags.verbose);
+    const logger = createLogger(verbose);
 
     logger.debug('Parsed flags: ' + JSON.stringify(flags, null, 2));
 
@@ -45,14 +53,49 @@ export async function main(argv: string[]): Promise<void> {
     }
 
   } catch (error) {
-    if (error instanceof Error) {
-      console.error('Error:', error.message);
-      if (process.env.DEBUG) {
-        console.error(error.stack);
-      }
-    } else {
-      console.error('An unexpected error occurred');
+    handleError(error, verbose);
+  }
+}
+
+/**
+ * Handle errors with user-friendly messages
+ */
+function handleError(error: unknown, verbose: boolean): never {
+  // Handle user cancellation (Ctrl+C or prompt cancellation)
+  if (error instanceof OperationCancelledError) {
+    console.log(error.message);
+    process.exit(error.exitCode);
+  }
+
+  // Handle inquirer ExitPromptError (user pressed Ctrl+C)
+  if (
+    error instanceof Error &&
+    (error.name === 'ExitPromptError' || error.message.includes('User force closed'))
+  ) {
+    console.log('\nOperation cancelled.');
+    process.exit(0);
+  }
+
+  // Handle TurbokitError with formatted output
+  if (isTurbokitError(error)) {
+    console.error(`\n${error.format(verbose)}\n`);
+    process.exit(error.exitCode);
+  }
+
+  // Handle standard errors
+  if (error instanceof Error) {
+    console.error('\nError:', error.message);
+    if (verbose && error.stack) {
+      console.error('\nStack trace:');
+      console.error(error.stack);
     }
     process.exit(1);
   }
+
+  // Handle unknown errors
+  console.error('\nAn unexpected error occurred');
+  if (verbose) {
+    console.error(error);
+  }
+  process.exit(1);
 }

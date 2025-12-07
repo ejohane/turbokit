@@ -10,6 +10,11 @@ import type { Logger } from '../utils/logger';
 import { copyTemplate } from './copyTemplate';
 import { buildVariables } from './applyVariables';
 import { mkdir, exists, removeDir, readFile, writeFile } from '../utils/fs';
+import {
+  DirectoryExistsError,
+  wrapCommandError,
+  wrapFileSystemError,
+} from '../utils/errors';
 
 /** Templates directory relative to this file */
 const templatesDir = join(dirname(dirname(dirname(import.meta.path))), 'templates');
@@ -37,13 +42,15 @@ function calculateTotalSteps(modules: ProjectConfig['modules']): number {
 
 /**
  * Run a shell command using Bun.spawn
+ * @throws {TurbokitError} On command failure with actionable suggestions
  */
 async function runCommand(
   command: string[],
   cwd: string,
   logger: Logger
 ): Promise<void> {
-  logger.debug(`Running: ${command.join(' ')}`);
+  const commandStr = command.join(' ');
+  logger.debug(`Running: ${commandStr}`);
 
   const proc = Bun.spawn(command, {
     cwd,
@@ -55,18 +62,25 @@ async function runCommand(
 
   if (exitCode !== 0) {
     const stderr = await new Response(proc.stderr).text();
-    throw new Error(`Command failed: ${command.join(' ')}\n${stderr}`);
+    throw wrapCommandError(commandStr, exitCode, stderr);
   }
 }
 
 /**
  * Add UI package dependency to a package.json file
+ * @throws {TurbokitError} On file read/write failure
  */
 async function addUiDependency(
   packageJsonPath: string,
   scope: string
 ): Promise<void> {
-  const content = await readFile(packageJsonPath);
+  let content: string;
+  try {
+    content = await readFile(packageJsonPath);
+  } catch (error) {
+    throw wrapFileSystemError(error, packageJsonPath, 'read');
+  }
+
   const pkg = JSON.parse(content);
 
   // Add UI dependency
@@ -79,7 +93,11 @@ async function addUiDependency(
   );
   pkg.dependencies = sortedDeps;
 
-  await writeFile(packageJsonPath, JSON.stringify(pkg, null, 2) + '\n');
+  try {
+    await writeFile(packageJsonPath, JSON.stringify(pkg, null, 2) + '\n');
+  } catch (error) {
+    throw wrapFileSystemError(error, packageJsonPath, 'write');
+  }
 }
 
 /**
@@ -107,14 +125,20 @@ export async function generate(options: GenerateOptions): Promise<void> {
 
     if (await exists(projectPath)) {
       if (!flags.force) {
-        throw new Error(
-          `Directory already exists: ${projectPath}\nUse --force to overwrite.`
-        );
+        throw new DirectoryExistsError(projectPath);
       }
       logger.warn('Overwriting existing directory');
-      await removeDir(projectPath);
+      try {
+        await removeDir(projectPath);
+      } catch (error) {
+        throw wrapFileSystemError(error, projectPath, 'remove directory');
+      }
     }
-    await mkdir(projectPath);
+    try {
+      await mkdir(projectPath);
+    } catch (error) {
+      throw wrapFileSystemError(error, projectPath, 'create directory');
+    }
 
     // Step 2: Copy root templates
     currentStep++;

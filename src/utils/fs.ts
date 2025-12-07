@@ -4,6 +4,7 @@
 
 import { mkdir as fsMkdir, readdir, stat, chmod } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
+import { wrapFileSystemError, TemplateNotFoundError } from './errors';
 
 // Directories to skip when copying
 const SKIP_DIRS = new Set(['node_modules', '.git', '.turbo', 'dist', 'coverage']);
@@ -83,6 +84,8 @@ export async function copyFile(
 
 /**
  * Copy a directory recursively with optional transformation
+ * @throws {TemplateNotFoundError} If source directory doesn't exist
+ * @throws {TurbokitError} On file system errors
  */
 export async function copyDir(
   src: string,
@@ -94,10 +97,24 @@ export async function copyDir(
 ): Promise<string[]> {
   const createdFiles: string[] = [];
 
-  async function copyRecursive(srcDir: string, destDir: string): Promise<void> {
-    await mkdir(destDir);
+  // Check if source exists
+  if (!(await exists(src))) {
+    throw new TemplateNotFoundError(src);
+  }
 
-    const entries = await readdir(srcDir, { withFileTypes: true });
+  async function copyRecursive(srcDir: string, destDir: string): Promise<void> {
+    try {
+      await mkdir(destDir);
+    } catch (error) {
+      throw wrapFileSystemError(error, destDir, 'create directory');
+    }
+
+    let entries;
+    try {
+      entries = await readdir(srcDir, { withFileTypes: true });
+    } catch (error) {
+      throw wrapFileSystemError(error, srcDir, 'read directory');
+    }
 
     for (const entry of entries) {
       const srcPath = join(srcDir, entry.name);
@@ -116,10 +133,14 @@ export async function copyDir(
       if (entry.isDirectory()) {
         await copyRecursive(srcPath, destPath);
       } else {
-        await copyFile(srcPath, destPath, (content) =>
-          options?.transform ? options.transform(content, srcPath) : content
-        );
-        createdFiles.push(destPath);
+        try {
+          await copyFile(srcPath, destPath, (content) =>
+            options?.transform ? options.transform(content, srcPath) : content
+          );
+          createdFiles.push(destPath);
+        } catch (error) {
+          throw wrapFileSystemError(error, srcPath, 'copy file');
+        }
       }
     }
   }
