@@ -33,7 +33,10 @@ function calculateTotalSteps(modules: ProjectConfig['modules']): number {
 
   if (modules.web) steps++;
   if (modules.mobile) steps++;
-  if (modules.api) steps++;
+  if (modules.api) {
+    steps++; // API app
+    steps++; // api-client package
+  }
   if (modules.storybook) steps++;
   if (modules.ui) steps++;
 
@@ -118,6 +121,11 @@ export async function generate(options: GenerateOptions): Promise<void> {
     dryRun: false,
   };
 
+  // Determine variant based on API selection
+  // Note: The variant name is 'api' - the '.with-' prefix is part of the filename pattern
+  // e.g., 'App.with-api.tsx.template' uses variant='api' to become 'App.tsx'
+  const apiVariant = modules.api ? 'api' : undefined;
+
   try {
     // Step 1: Create project directory
     currentStep++;
@@ -146,7 +154,10 @@ export async function generate(options: GenerateOptions): Promise<void> {
     await copyTemplate(
       join(templatesDir, 'root'),
       projectPath,
-      copyOptions
+      {
+        ...copyOptions,
+        variant: apiVariant,
+      }
     );
 
     // Step 3: Copy config package
@@ -162,10 +173,23 @@ export async function generate(options: GenerateOptions): Promise<void> {
     if (modules.web) {
       currentStep++;
       logger.step(currentStep, totalSteps, 'Setting up web app');
+
+      // Determine which files to exclude based on API selection
+      const webExclude = ['node_modules', '.git'];
+      if (!modules.api) {
+        // Exclude API-specific files when API is not selected
+        webExclude.push('api');
+        webExclude.push('.env.example.template');
+      }
+
       await copyTemplate(
         join(templatesDir, 'apps', 'web'),
         join(projectPath, 'apps', 'web'),
-        copyOptions
+        {
+          ...copyOptions,
+          exclude: webExclude,
+          variant: apiVariant,
+        }
       );
       // Add UI dependency if UI package is also selected
       if (modules.ui) {
@@ -179,10 +203,24 @@ export async function generate(options: GenerateOptions): Promise<void> {
     if (modules.mobile) {
       currentStep++;
       logger.step(currentStep, totalSteps, 'Setting up mobile app');
+
+      // Determine which files to exclude based on API selection
+      const mobileExclude = ['node_modules', '.git', 'app.json.template'];
+      if (!modules.api) {
+        // Exclude API-specific files when API is not selected
+        mobileExclude.push('api');
+        mobileExclude.push('config');
+        mobileExclude.push('.env.example.template');
+      }
+
       await copyTemplate(
         join(templatesDir, 'apps', 'mobile'),
         join(projectPath, 'apps', 'mobile'),
-        copyOptions
+        {
+          ...copyOptions,
+          exclude: mobileExclude,
+          variant: apiVariant,
+        }
       );
     }
 
@@ -192,6 +230,15 @@ export async function generate(options: GenerateOptions): Promise<void> {
       await copyTemplate(
         join(templatesDir, 'apps', 'api'),
         join(projectPath, 'apps', 'api'),
+        copyOptions
+      );
+
+      // Also copy the api-client package when API is selected
+      currentStep++;
+      logger.step(currentStep, totalSteps, 'Setting up API client package');
+      await copyTemplate(
+        join(templatesDir, 'packages', 'api-client'),
+        join(projectPath, 'packages', 'api-client'),
         copyOptions
       );
     }

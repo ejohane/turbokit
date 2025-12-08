@@ -1,0 +1,35 @@
+import { useQuery } from '@tanstack/react-query';
+import type { ApiClient } from './client';
+
+/**
+ * Create TanStack Query hooks for the given API client.
+ *
+ * Usage:
+ * ```ts
+ * const api = createApiClient('http://localhost:3001');
+ * const hooks = createApiHooks(api);
+ *
+ * // In a component:
+ * const { data, isLoading } = hooks.useHealth();
+ * ```
+ */
+export function createApiHooks(api: ApiClient) {
+  return {
+    /**
+     * Fetch API health status.
+     */
+    useHealth: () =>
+      useQuery({
+        queryKey: ['health'],
+        queryFn: async () => {
+          const res = await api.health.$get();
+          if (!res.ok) throw new Error('Failed to fetch health');
+          return res.json();
+        },
+      }),
+
+    // Add more hooks as you add API endpoints:
+    // useUsers: () => useQuery({ ... }),
+    // useUser: (id: string) => useQuery({ ... }),
+  };
+}

@@ -1,0 +1,12 @@
+import { createApiClient, createApiHooks } from "@{{scope}}/api-client";
+import { getApiUrl } from "../config/env";
+
+// Create client with platform-aware URL
+export const api = createApiClient(getApiUrl());
+
+// Create and export hooks
+const hooks = createApiHooks(api);
+export const useHealth = hooks.useHealth;
+
+// Re-export types
+export type { ApiClient, AppType } from "@{{scope}}/api-client";

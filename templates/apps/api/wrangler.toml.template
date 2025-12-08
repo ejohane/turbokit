@@ -1,0 +1,16 @@
+name = "{{projectName}}-api"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+
+[dev]
+port = 3001
+
+# Uncomment to add bindings:
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "{{projectName}}-db"
+# database_id = "your-database-id"
+
+# [[kv_namespaces]]
+# binding = "KV"
+# id = "your-kv-id"
