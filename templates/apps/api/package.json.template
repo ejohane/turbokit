@@ -3,18 +3,25 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    }
+  },
   "scripts": {
-    "dev": "bun --watch src/index.ts",
-    "start": "bun src/index.ts",
-    "build": "bun build src/index.ts --outdir dist --target bun",
-    "typecheck": "tsc --noEmit"
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "tail": "wrangler tail"
   },
   "dependencies": {
-    "hono": "^4.6.0",
-    "@{{scope}}/config": "workspace:*"
+    "hono": "^4.6.0"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241127.0",
+    "@{{scope}}/config": "workspace:*",
     "typescript": "^5.5.0",
-    "@types/bun": "^1.1.0"
+    "wrangler": "^3.91.0"
   }
 }

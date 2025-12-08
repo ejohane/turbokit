@@ -1,9 +1,8 @@
 {
-  "extends": "@{{scope}}/config/tsconfig.node.json",
+  "extends": "@{{scope}}/config/tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "dist",
-    "rootDir": "src"
+    "types": ["@cloudflare/workers-types"],
+    "noEmit": true
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*.ts"]
 }

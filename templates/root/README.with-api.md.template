@@ -1,0 +1,124 @@
+# {{projectName}}
+
+A Turborepo monorepo generated with [Turbokit](https://github.com/...).
+
+## Getting Started
+
+### Prerequisites
+- [Bun](https://bun.sh/) v1.0+
+- Node.js 18+ (for some tooling)
+
+### Installation
+```bash
+bun install
+```
+
+### Development
+```bash
+bun run dev       # Start all apps in development mode
+bun run build     # Build all apps and packages
+bun run lint      # Lint all packages
+bun run test      # Run all tests
+bun run typecheck # Type check all packages
+```
+
+## Project Structure
+```
+{{projectName}}/
+├── apps/
+│   ├── web/        # React + Vite web application
+│   ├── api/        # Hono API on Cloudflare Workers
+│   └── ...
+├── packages/
+│   ├── api-client/ # Type-safe API client with TanStack Query
+│   ├── ui/         # Shared UI components
+│   └── config/     # Shared configuration (ESLint, TypeScript)
+└── ...
+```
+
+## Scripts
+- `dev` - Start development servers
+- `dev:api` - Start only the API server
+- `dev:web` - Start only the web app
+- `build` - Production build
+- `lint` - Run ESLint
+- `test` - Run Vitest tests
+- `typecheck` - Run TypeScript compiler checks
+- `ci` - Run all checks (lint, typecheck, test, build)
+- `deploy:api` - Deploy API to Cloudflare Workers
+
+## API Development
+
+The API runs on Cloudflare Workers using the Hono framework.
+
+### Local Development
+
+```bash
+# Start the API (runs on http://localhost:3001)
+bun run dev:api
+
+# Or start all services
+bun run dev
+```
+
+### Deployment
+
+```bash
+# Deploy to Cloudflare Workers
+bun run deploy:api
+
+# View production logs
+cd apps/api && bun run tail
+```
+
+### Adding New Endpoints
+
+1. Add routes in `apps/api/src/index.ts` using Hono's chained syntax:
+   ```typescript
+   const app = new Hono()
+     .get("/health", ...)
+     .get("/users", ...)  // Add new routes by chaining
+   ```
+   
+2. Update the hooks in `packages/api-client/src/hooks.ts`:
+   ```typescript
+   useUsers: () => useQuery({
+     queryKey: ["users"],
+     queryFn: async () => {
+       const res = await api.users.$get();
+       return res.json();
+     },
+   }),
+   ```
+
+3. Types flow automatically from API -> api-client -> web/mobile!
+
+## Mobile Development
+
+### Simulators/Emulators
+
+The app automatically uses the correct localhost URL:
+- iOS Simulator: `http://localhost:3001`
+- Android Emulator: `http://10.0.2.2:3001`
+
+### Physical Device Development
+
+For testing on physical devices, set the API URL to your machine's local IP:
+
+1. Find your computer's local IP (e.g., `192.168.1.100`)
+2. Update `apps/mobile/.env`:
+   ```
+   API_URL=http://192.168.1.100:3001
+   ```
+3. Ensure your device and computer are on the same network
+4. Restart the Expo dev server
+
+## Technologies
+- [Turborepo](https://turbo.build/repo) - Monorepo build system
+- [Bun](https://bun.sh/) - JavaScript runtime & package manager
+- [Hono](https://hono.dev/) - Web framework for Cloudflare Workers
+- [TanStack Query](https://tanstack.com/query) - Data fetching & caching
+- [React](https://react.dev/) - UI framework
+- [TypeScript](https://www.typescriptlang.org/) - Type safety
+- [Vite](https://vitejs.dev/) - Build tool
+- [Vitest](https://vitest.dev/) - Testing framework

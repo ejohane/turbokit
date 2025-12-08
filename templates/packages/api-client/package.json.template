@@ -1,5 +1,5 @@
 {
-  "name": "@{{scope}}/ui",
+  "name": "@{{scope}}/api-client",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -10,17 +10,15 @@
     }
   },
   "scripts": {
-    "lint": "eslint src",
     "typecheck": "tsc --noEmit"
   },
-  "peerDependencies": {
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+  "dependencies": {
+    "@{{scope}}/api": "workspace:*",
+    "@tanstack/react-query": "^5.62.0",
+    "hono": "^4.6.0"
   },
   "devDependencies": {
     "@{{scope}}/config": "workspace:*",
-    "@types/react": "^19.1.0",
-    "@types/react-dom": "^19.1.0",
     "typescript": "{{typescriptVersion}}"
   }
 }

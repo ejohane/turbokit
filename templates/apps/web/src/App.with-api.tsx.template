@@ -1,0 +1,26 @@
+import { Button } from "@{{scope}}/ui";
+import { useHealth } from "./api";
+
+function App() {
+  const { data, isLoading, error } = useHealth();
+
+  return (
+    <div style={{ padding: "2rem", fontFamily: "system-ui" }}>
+      <h1>{{projectName}}</h1>
+      <p>Welcome to your new web app!</p>
+      <Button>Click me</Button>
+
+      <div style={{ marginTop: "1rem" }}>
+        {isLoading && <p>Connecting to API...</p>}
+        {error && (
+          <p style={{ color: "#ef4444" }}>API Error: {error.message}</p>
+        )}
+        {data && (
+          <p style={{ color: "#22c55e" }}>API Status: {data.status}</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default App;

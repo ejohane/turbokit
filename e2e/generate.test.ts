@@ -217,7 +217,7 @@ describe('E2E: Project Generation', () => {
       expect(existsSync(`${MOBILE_DIR}/apps/mobile`)).toBe(true);
       expect(existsSync(`${MOBILE_DIR}/apps/mobile/package.json`)).toBe(true);
       expect(existsSync(`${MOBILE_DIR}/apps/mobile/App.tsx`)).toBe(true);
-      expect(existsSync(`${MOBILE_DIR}/apps/mobile/app.json`)).toBe(true);
+      expect(existsSync(`${MOBILE_DIR}/apps/mobile/app.config.ts`)).toBe(true);
     });
   });
 

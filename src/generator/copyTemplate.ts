@@ -36,6 +36,13 @@ export interface CopyOptions {
   transformFileName?: (name: string) => string;
   /** Whether to actually write files or just return list (for dry-run) */
   dryRun?: boolean;
+  /**
+   * Template variant to use (e.g., 'with-api').
+   * When set, files like 'App.with-api.tsx.template' will be copied as 'App.tsx'
+   * and files like 'package.with-api.json.template' will be copied as 'package.json'.
+   * The variant-specific file takes precedence over the default file.
+   */
+  variant?: string;
 }
 
 /**
@@ -46,6 +53,38 @@ export function defaultTransformFileName(name: string): string {
     return name.slice(0, -'.template'.length);
   }
   return name;
+}
+
+/**
+ * Create a filename transformer that handles variant files.
+ * Variant files like 'App.with-api.tsx.template' become 'App.tsx' when variant='with-api'.
+ * Also strips variant markers from non-selected variants.
+ */
+export function createVariantTransformer(variant?: string): (name: string) => string | null {
+  return (name: string): string | null => {
+    // First strip .template extension
+    let result = name;
+    if (result.endsWith('.template')) {
+      result = result.slice(0, -'.template'.length);
+    }
+
+    // Check if this is a variant file (contains .with-something.)
+    const variantMatch = result.match(/^(.+)\.with-([^.]+)\.(.+)$/);
+    if (variantMatch) {
+      const [, baseName, fileVariant, extension] = variantMatch;
+      if (variant && fileVariant === variant) {
+        // This is our selected variant - transform to base name
+        return `${baseName}.${extension}`;
+      } else {
+        // This is a different variant or no variant selected - skip this file
+        return null;
+      }
+    }
+
+    // Not a variant file - check if a variant version should take precedence
+    // This is handled by the caller filtering out base files when variant exists
+    return result;
+  };
 }
 
 /**
@@ -86,10 +125,60 @@ export async function copyTemplate(
     include,
     transformFileName = defaultTransformFileName,
     dryRun = false,
+    variant,
   } = options;
+
+  // Create variant-aware transformer if variant is specified
+  const variantTransformer = variant ? createVariantTransformer(variant) : null;
 
   const fileEntries: FileEntry[] = [];
   const destPaths: string[] = [];
+
+  // Collect all filenames to detect variant conflicts
+  const allFiles = new Set<string>();
+
+  /**
+   * First pass: collect all filenames to detect which base files have variants
+   */
+  async function collectFiles(srcDir: string): Promise<void> {
+    const entries = await readdir(srcDir, { withFileTypes: true });
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        await collectFiles(join(srcDir, entry.name));
+      } else {
+        allFiles.add(entry.name);
+      }
+    }
+  }
+
+  // Collect all files first if we have a variant
+  if (variant) {
+    await collectFiles(templateDir);
+  }
+
+  /**
+   * Check if a base file should be skipped because a variant file exists and is selected
+   */
+  function shouldSkipForVariant(fileName: string): boolean {
+    if (!variant) return false;
+
+    // Check if this is a base file that has a variant version
+    // e.g., App.tsx.template should be skipped if App.with-api.tsx.template exists and variant='with-api'
+    const withoutTemplate = fileName.endsWith('.template')
+      ? fileName.slice(0, -'.template'.length)
+      : fileName;
+
+    // Extract base name and extension
+    const lastDotIndex = withoutTemplate.lastIndexOf('.');
+    if (lastDotIndex === -1) return false;
+
+    const baseName = withoutTemplate.slice(0, lastDotIndex);
+    const extension = withoutTemplate.slice(lastDotIndex + 1);
+
+    // Check if variant file exists
+    const variantFileName = `${baseName}.with-${variant}.${extension}.template`;
+    return allFiles.has(variantFileName);
+  }
 
   /**
    * Recursively walk the template directory
@@ -114,8 +203,27 @@ export async function copyTemplate(
           continue;
         }
 
-        // Transform the filename
-        const destFileName = transformFileName(entry.name);
+        // Handle variant file selection
+        let destFileName: string;
+        if (variantTransformer) {
+          const transformed = variantTransformer(entry.name);
+          if (transformed === null) {
+            // Skip this file (it's a variant file that doesn't match our variant)
+            continue;
+          }
+          // Skip base files that have a selected variant
+          if (shouldSkipForVariant(entry.name)) {
+            continue;
+          }
+          destFileName = transformed;
+        } else {
+          // No variant - use default transformer but skip all variant files
+          if (entry.name.includes('.with-')) {
+            continue;
+          }
+          destFileName = transformFileName(entry.name);
+        }
+
         const destPath = join(destSubDir, destFileName);
 
         // Read file content

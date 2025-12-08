@@ -1,12 +1,20 @@
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View } from "react-native";
 import { QueryProvider } from "./src/providers/QueryProvider";
+import { useHealth } from "./src/api";
 
 function HomeScreen() {
+  const { data, isLoading, error } = useHealth();
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{{projectName}}</Text>
       <Text style={styles.subtitle}>Mobile App</Text>
+
+      {isLoading && <Text style={styles.status}>Connecting to API...</Text>}
+      {error && <Text style={styles.error}>API Error: {error.message}</Text>}
+      {data && <Text style={styles.status}>API Status: {data.status}</Text>}
+
       <StatusBar style="auto" />
     </View>
   );
@@ -35,5 +43,14 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     color: "#666",
+    marginBottom: 16,
+  },
+  status: {
+    fontSize: 14,
+    color: "#22c55e",
+  },
+  error: {
+    fontSize: 14,
+    color: "#ef4444",
   },
 });
